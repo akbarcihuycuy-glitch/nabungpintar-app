@@ -60,4 +60,197 @@ export function useGoals() {
             if (!error && data) return data;
           }
         } catch (err) {
-          console.warn('Failed to add goal to Supabase, saving to LocalStorage:', err);\n        }\n      }\n\n      return await storageService.addGoal(goal);\n    },\n    onSuccess: () => {\n      queryClient.invalidateQueries({ queryKey: ['goals'] });\n      queryClient.invalidateQueries({ queryKey: ['summary'] });\n    },\n  });\n\n  const updateGoalMutation = useMutation({\n    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SavingsGoal> }) => {\n      if (isSupabaseConfigured && supabase) {\n        try {\n          const { data, error } = await supabase\n            .from('savings_goals')\n            .update(updates)\n            .eq('id', id)\n            .select()\n            .single();\n          if (!error && data) return data;\n        } catch (err) {\n          console.warn('Failed to update goal in Supabase, using LocalStorage:', err);\n        }\n      }\n\n      return await storageService.updateGoal(id, updates);\n    },\n    onSuccess: () => {\n      queryClient.invalidateQueries({ queryKey: ['goals'] });\n      queryClient.invalidateQueries({ queryKey: ['summary'] });\n    },\n  });\n\n  const deleteGoalMutation = useMutation({\n    mutationFn: async (id: string) => {\n      if (isSupabaseConfigured && supabase) {\n        try {\n          await supabase.from('savings_goals').delete().eq('id', id);\n        } catch (err) {\n          console.warn('Failed to delete goal in Supabase, using LocalStorage:', err);\n        }\n      }\n\n      await storageService.deleteGoal(id);\n    },\n    onSuccess: () => {\n      queryClient.invalidateQueries({ queryKey: ['goals'] });\n      queryClient.invalidateQueries({ queryKey: ['summary'] });\n    },\n  });\n\n  const addTopUpMutation = useMutation({\n    mutationFn: async ({\n      goalId,\n      amount,\n      note,\n      occurredOn,\n    }: {\n      goalId: string;\n      amount: number;\n      note?: string;\n      occurredOn?: string;\n    }) => {\n      const dateStr = occurredOn || getWIBDate();\n      if (isSupabaseConfigured && supabase) {\n        try {\n          const userId = await ensureAuth();\n          if (userId) {\n            const { data, error } = await supabase\n              .from('savings_entries')\n              .insert({\n                user_id: userId,\n                goal_id: goalId,\n                kind: 'topup',\n                amount,\n                note: note || 'Top Up Celengan',\n                occurred_on: dateStr,\n              })\n              .select()\n              .single();\n            if (!error && data) return data;\n          }\n        } catch (err) {\n          console.warn('Failed to add top up to Supabase, saving to LocalStorage:', err);\n        }\n      }\n\n      return await storageService.addSavingsEntry({\n        goal_id: goalId,\n        kind: 'topup',\n        amount,\n        note: note || 'Top Up Celengan',\n        occurred_on: dateStr,\n      });\n    },\n    onSuccess: () => {\n      queryClient.invalidateQueries({ queryKey: ['goals'] });\n      queryClient.invalidateQueries({ queryKey: ['goal_entries'] });\n      queryClient.invalidateQueries({ queryKey: ['summary'] });\n    },\n  });\n\n  const withdrawMutation = useMutation({\n    mutationFn: async ({\n      goalId,\n      amount,\n      note,\n      occurredOn,\n    }: {\n      goalId: string;\n      amount: number;\n      note?: string;\n      occurredOn?: string;\n    }) => {\n      const dateStr = occurredOn || getWIBDate();\n      if (isSupabaseConfigured && supabase) {\n        try {\n          const userId = await ensureAuth();\n          if (userId) {\n            const { data, error } = await supabase\n              .from('savings_entries')\n              .insert({\n                user_id: userId,\n                goal_id: goalId,\n                kind: 'withdraw',\n                amount,\n                note: note || 'Tarik Tabungan',\n                occurred_on: dateStr,\n              })\n              .select()\n              .single();\n            if (!error && data) return data;\n          }\n        } catch (err) {\n          console.warn('Failed to withdraw in Supabase, saving to LocalStorage:', err);\n        }\n      }\n\n      return await storageService.addSavingsEntry({\n        goal_id: goalId,\n        kind: 'withdraw',\n        amount,\n        note: note || 'Tarik Tabungan',\n        occurred_on: dateStr,\n      });\n    },\n    onSuccess: () => {\n      queryClient.invalidateQueries({ queryKey: ['goals'] });\n      queryClient.invalidateQueries({ queryKey: ['goal_entries'] });\n      queryClient.invalidateQueries({ queryKey: ['summary'] });\n    },\n  });\n\n  return {\n    goals: query.data || [],\n    isLoading: query.isLoading,\n    isError: query.isError,\n    error: query.error,\n    refetch: query.refetch,\n    addGoal: addGoalMutation.mutateAsync,\n    updateGoal: updateGoalMutation.mutateAsync,\n    deleteGoal: deleteGoalMutation.mutateAsync,\n    addTopUp: addTopUpMutation.mutateAsync,\n    withdraw: withdrawMutation.mutateAsync,\n  };\n}\n\nexport function useGoalEntries(goalId?: string) {\n  return useQuery<SavingsEntry[]>({\n    queryKey: ['goal_entries', goalId],\n    queryFn: async () => {\n      if (!goalId) return [];\n\n      if (isSupabaseConfigured && supabase) {\n        try {\n          const { data, error } = await supabase\n            .from('savings_entries')\n            .select('*')\n            .eq('goal_id', goalId)\n            .order('occurred_on', { ascending: false });\n          if (!error && data) return data;\n        } catch (err) {\n          console.warn('Failed to fetch goal entries from Supabase, falling back:', err);\n        }\n      }\n\n      return await storageService.getSavingsEntriesForGoal(goalId);\n    },\n    enabled: Boolean(goalId),\n  });\n}\n
+          console.warn('Failed to add goal to Supabase, saving to LocalStorage:', err);
+        }
+      }
+
+      return await storageService.addGoal(goal);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const updateGoalMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SavingsGoal> }) => {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('savings_goals')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+          if (!error && data) return data;
+        } catch (err) {
+          console.warn('Failed to update goal in Supabase, using LocalStorage:', err);
+        }
+      }
+
+      return await storageService.updateGoal(id, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          await supabase.from('savings_goals').delete().eq('id', id);
+        } catch (err) {
+          console.warn('Failed to delete goal in Supabase, using LocalStorage:', err);
+        }
+      }
+
+      await storageService.deleteGoal(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const addTopUpMutation = useMutation({
+    mutationFn: async ({
+      goalId,
+      amount,
+      note,
+      occurredOn,
+    }: {
+      goalId: string;
+      amount: number;
+      note?: string;
+      occurredOn?: string;
+    }) => {
+      const dateStr = occurredOn || getWIBDate();
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const userId = await ensureAuth();
+          if (userId) {
+            const { data, error } = await supabase
+              .from('savings_entries')
+              .insert({
+                user_id: userId,
+                goal_id: goalId,
+                kind: 'topup',
+                amount,
+                note: note || 'Top Up Celengan',
+                occurred_on: dateStr,
+              })
+              .select()
+              .single();
+            if (!error && data) return data;
+          }
+        } catch (err) {
+          console.warn('Failed to add top up to Supabase, saving to LocalStorage:', err);
+        }
+      }
+
+      return await storageService.addSavingsEntry({
+        goal_id: goalId,
+        kind: 'topup',
+        amount,
+        note: note || 'Top Up Celengan',
+        occurred_on: dateStr,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['goal_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const withdrawMutation = useMutation({
+    mutationFn: async ({
+      goalId,
+      amount,
+      note,
+      occurredOn,
+    }: {
+      goalId: string;
+      amount: number;
+      note?: string;
+      occurredOn?: string;
+    }) => {
+      const dateStr = occurredOn || getWIBDate();
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const userId = await ensureAuth();
+          if (userId) {
+            const { data, error } = await supabase
+              .from('savings_entries')
+              .insert({
+                user_id: userId,
+                goal_id: goalId,
+                kind: 'withdraw',
+                amount,
+                note: note || 'Tarik Tabungan',
+                occurred_on: dateStr,
+              })
+              .select()
+              .single();
+            if (!error && data) return data;
+          }
+        } catch (err) {
+          console.warn('Failed to withdraw in Supabase, saving to LocalStorage:', err);
+        }
+      }
+
+      return await storageService.addSavingsEntry({
+        goal_id: goalId,
+        kind: 'withdraw',
+        amount,
+        note: note || 'Tarik Tabungan',
+        occurred_on: dateStr,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ['goal_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  return {
+    goals: query.data || [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+    addGoal: addGoalMutation.mutateAsync,
+    updateGoal: updateGoalMutation.mutateAsync,
+    deleteGoal: deleteGoalMutation.mutateAsync,
+    addTopUp: addTopUpMutation.mutateAsync,
+    withdraw: withdrawMutation.mutateAsync,
+  };
+}
+
+export function useGoalEntries(goalId?: string) {
+  return useQuery<SavingsEntry[]>({
+    queryKey: ['goal_entries', goalId],
+    queryFn: async () => {
+      if (!goalId) return [];
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('savings_entries')
+            .select('*')
+            .eq('goal_id', goalId)
+            .order('occurred_on', { ascending: false });
+          if (!error && data) return data;
+        } catch (err) {
+          console.warn('Failed to fetch goal entries from Supabase, falling back:', err);
+        }
+      }
+
+      return await storageService.getSavingsEntriesForGoal(goalId);
+    },
+    enabled: Boolean(goalId),
+  });
+}

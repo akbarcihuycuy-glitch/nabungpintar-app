@@ -125,3 +125,4 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({ isOpen
     </div>
   );
 };
+

@@ -55,7 +55,8 @@ export async function generateImportHash(
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
     }
-  } catch {}\n
+  } catch {}
+
   // Simple string fallback hash if crypto.subtle is unavailable
   let hash = 0;
   for (let i = 0; i < payload.length; i++) {
@@ -363,3 +364,4 @@ export function downloadSampleCsv(): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+

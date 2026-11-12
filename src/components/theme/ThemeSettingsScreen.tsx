@@ -276,3 +276,4 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ onBack
     </div>
   );
 };
+

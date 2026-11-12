@@ -24,7 +24,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     e.preventDefault();
     if (newPassword.length < 6) {
       setErrorMsg('Kata sandi baru minimal 6 karakter.');
-      return;\n    }
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setErrorMsg('Konfirmasi kata sandi tidak cocok.');
       return;
@@ -141,3 +142,4 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     </div>
   );
 };
+

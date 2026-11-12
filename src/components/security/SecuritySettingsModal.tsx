@@ -1,1 +1,393 @@
-import React, { useState, useEffect } from 'react';\nimport {\n  isPinConfigured,\n  verifyPin,\n  setSecurityPin,\n  removeSecurityPin,\n  isBiometricEnabled,\n  setBiometricEnabled,\n  canUseBiometrics,\n} from '../../services/security';\n\ninterface SecuritySettingsModalProps {\n  isOpen: boolean;\n  onClose: () => void;\n  onSuccessToast?: (msg: string) => void;\n}\n\nexport const SecuritySettingsModal: React.FC<SecuritySettingsModalProps> = ({\n  isOpen,\n  onClose,\n  onSuccessToast,\n}) => {\n  const [hasPin, setHasPin] = useState<boolean>(false);\n  const [biometricActive, setBiometricActive] = useState<boolean>(false);\n  const [canBiometric, setCanBiometric] = useState<boolean>(false);\n\n  // Setup / Change form\n  const [mode, setMode] = useState<'view' | 'set' | 'change' | 'remove'>('view');\n  const [oldPin, setOldPin] = useState<string>('');\n  const [newPin, setNewPin] = useState<string>('');\n  const [confirmPin, setConfirmPin] = useState<string>('');\n  const [errorMsg, setErrorMsg] = useState<string | null>(null);\n\n  useEffect(() => {\n    if (isOpen) {\n      setHasPin(isPinConfigured());\n      setBiometricActive(isBiometricEnabled());\n      canUseBiometrics().then(setCanBiometric);\n      setMode('view');\n      setOldPin('');\n      setNewPin('');\n      setConfirmPin('');\n      setErrorMsg(null);\n    }\n  }, [isOpen]);\n\n  if (!isOpen) return null;\n\n  const handleSaveNewPin = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (newPin.length !== 6 || !/^\\d{6}$/.test(newPin)) {\n      setErrorMsg('PIN harus terdiri dari 6 angka.');\n      return;\n    }\n    if (newPin !== confirmPin) {\n      setErrorMsg('Konfirmasi PIN tidak cocok.');\n      return;\n    }\n\n    setSecurityPin(newPin);\n    setHasPin(true);\n    setMode('view');\n    onSuccessToast?.('Kunci PIN 6 angka berhasil diaktifkan!');\n  };\n\n  const handleChangePin = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!verifyPin(oldPin)) {\n      setErrorMsg('PIN lama salah.');\n      return;\n    }\n    if (newPin.length !== 6 || !/^\\d{6}$/.test(newPin)) {\n      setErrorMsg('PIN baru harus terdiri dari 6 angka.');\n      return;\n    }\n    if (newPin !== confirmPin) {\n      setErrorMsg('Konfirmasi PIN tidak cocok.');\n      return;\n    }\n\n    setSecurityPin(newPin);\n    setMode('view');\n    onSuccessToast?.('PIN keamanan berhasil diperbarui!');\n  };\n\n  const handleRemovePin = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!verifyPin(oldPin)) {\n      setErrorMsg('PIN lama salah.');\n      return;\n    }\n\n    removeSecurityPin();\n    setHasPin(false);\n    setBiometricActive(false);\n    setMode('view');\n    onSuccessToast?.('Kunci PIN dinonaktifkan.');\n  };\n\n  const handleToggleBiometric = () => {\n    const next = !biometricActive;\n    setBiometricActive(next);\n    setBiometricEnabled(next);\n    onSuccessToast?.(\n      next ? 'Autentikasi Biometrik diaktifkan!' : 'Autentikasi Biometrik dimatikan.'\n    );\n  };\n\n  return (\n    <div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in\">\n      <div className=\"relative w-full max-w-sm bg-surface/95 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl border border-white/10 text-on-surface overflow-hidden\">\n        {/* Header */}\n        <div className=\"flex items-center justify-between pb-3 border-b border-border/30\">\n          <div className=\"flex items-center gap-2\">\n            <span className=\"material-symbols-outlined text-primary text-[20px]\">security</span>\n            <h3 className=\"text-sm font-bold text-on-surface\">Keamanan & Kunci Aplikasi</h3>\n          </div>\n          <button\n            onClick={onClose}\n            type=\"button\"\n            className=\"w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-on-surface transition-colors\"\n          >\n            <span className=\"material-symbols-outlined text-[16px]\">close</span>\n          </button>\n        </div>\n\n        {errorMsg && (\n          <div className=\"mt-3 p-2.5 rounded-xl bg-error/15 border border-error/30 text-error text-xs flex items-center gap-2\">\n            <span className=\"material-symbols-outlined text-[16px]\">error</span>\n            <span>{errorMsg}</span>\n          </div>\n        )}\n\n        {/* View Mode */}\n        {mode === 'view' && (\n          <div className=\"space-y-4 pt-3\">\n            {/* PIN Card */}\n            <div className=\"p-3.5 rounded-2xl bg-surface-container-high/60 border border-border/40 flex items-center justify-between\">\n              <div className=\"flex items-center gap-3\">\n                <div\n                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${\n                    hasPin ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-outline'\n                  }`}\n                >\n                  <span className=\"material-symbols-outlined text-[22px]\">\n                    {hasPin ? 'lock' : 'lock_open'}\n                  </span>\n                </div>\n                <div>\n                  <h4 className=\"text-xs font-bold text-on-surface\">Kunci PIN 6 Angka</h4>\n                  <p className=\"text-[10px] text-outline\">\n                    {hasPin ? 'Aktif saat membuka aplikasi' : 'Belum diatur'}\n                  </p>\n                </div>\n              </div>\n\n              {hasPin ? (\n                <div className=\"flex items-center gap-1.5\">\n                  <button\n                    onClick={() => {\n                      setMode('change');\n                      setErrorMsg(null);\n                    }}\n                    type=\"button\"\n                    className=\"px-2.5 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-xs font-semibold text-primary transition-colors\"\n                  >\n                    Ubah\n                  </button>\n                  <button\n                    onClick={() => {\n                      setMode('remove');\n                      setErrorMsg(null);\n                    }}\n                    type=\"button\"\n                    className=\"px-2 py-1.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors\"\n                  >\n                    Hapus\n                  </button>\n                </div>\n              ) : (\n                <button\n                  onClick={() => {\n                    setMode('set');\n                    setErrorMsg(null);\n                  }}\n                  type=\"button\"\n                  className=\"px-3 py-1.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95 transition-all\"\n                >\n                  Aktifkan\n                </button>\n              )}\n            </div>\n\n            {/* Biometric Card (Only available if PIN is active) */}\n            {hasPin && (\n              <div className=\"p-3.5 rounded-2xl bg-surface-container-high/60 border border-border/40 flex items-center justify-between\">\n                <div className=\"flex items-center gap-3\">\n                  <div\n                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${\n                      biometricActive\n                        ? 'bg-primary/20 text-primary'\n                        : 'bg-surface-container-highest text-outline'\n                    }`}\n                  >\n                    <span className=\"material-symbols-outlined text-[22px]\">fingerprint</span>\n                  </div>\n                  <div>\n                    <h4 className=\"text-xs font-bold text-on-surface\">Sidik Jari / Biometrik</h4>\n                    <p className=\"text-[10px] text-outline\">\n                      {canBiometric\n                        ? 'Buka aplikasi dengan sensor biometrik'\n                        : 'Sensor biometrik tidak terdeteksi'}\n                    </p>\n                  </div>\n                </div>\n\n                <button\n                  type=\"button\"\n                  onClick={handleToggleBiometric}\n                  className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${\n                    biometricActive ? 'bg-primary' : 'bg-surface-container-highest'\n                  }`}\n                >\n                  <div\n                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${\n                      biometricActive ? 'translate-x-5' : 'translate-x-0'\n                    }`}\n                  />\n                </button>\n              </div>\n            )}\n          </div>\n        )}\n\n        {/* Set New PIN Mode */}\n        {mode === 'set' && (\n          <form onSubmit={handleSaveNewPin} className=\"space-y-3 pt-3\">\n            <p className=\"text-xs text-outline\">\n              Buat 6 digit PIN numerik yang mudah Anda ingat untuk mengunci aplikasi.\n            </p>\n\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">PIN Baru (6 Angka)</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={newPin}\n                onChange={(e) => setNewPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">Konfirmasi PIN</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={confirmPin}\n                onChange={(e) => setConfirmPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"pt-2 flex items-center gap-2\">\n              <button\n                type=\"button\"\n                onClick={() => setMode('view')}\n                className=\"flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest\"\n              >\n                Batal\n              </button>\n              <button\n                type=\"submit\"\n                className=\"flex-1 py-2.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95\"\n              >\n                Simpan PIN\n              </button>\n            </div>\n          </form>\n        )}\n\n        {/* Change PIN Mode */}\n        {mode === 'change' && (\n          <form onSubmit={handleChangePin} className=\"space-y-3 pt-3\">\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">PIN Lama</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={oldPin}\n                onChange={(e) => setOldPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">PIN Baru</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={newPin}\n                onChange={(e) => setNewPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">Konfirmasi PIN Baru</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={confirmPin}\n                onChange={(e) => setConfirmPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"pt-2 flex items-center gap-2\">\n              <button\n                type=\"button\"\n                onClick={() => setMode('view')}\n                className=\"flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest\"\n              >\n                Batal\n              </button>\n              <button\n                type=\"submit\"\n                className=\"flex-1 py-2.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95\"\n              >\n                Ubah PIN\n              </button>\n            </div>\n          </form>\n        )}\n\n        {/* Remove PIN Mode */}\n        {mode === 'remove' && (\n          <form onSubmit={handleRemovePin} className=\"space-y-3 pt-3\">\n            <p className=\"text-xs text-rose-400\">\n              Masukkan PIN Anda saat ini untuk menonaktifkan fitur kunci keamanan.\n            </p>\n\n            <div className=\"space-y-1\">\n              <label className=\"text-[11px] font-semibold text-outline block\">PIN Saat Ini</label>\n              <input\n                type=\"password\"\n                inputMode=\"numeric\"\n                maxLength={6}\n                value={oldPin}\n                onChange={(e) => setOldPin(e.target.value.replace(/\\D/g, ''))}\n                placeholder=\"••••••\"\n                required\n                className=\"w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary\"\n              />\n            </div>\n\n            <div className=\"pt-2 flex items-center gap-2\">\n              <button\n                type=\"button\"\n                onClick={() => setMode('view')}\n                className=\"flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest\"\n              >\n                Batal\n              </button>\n              <button\n                type=\"submit\"\n                className=\"flex-1 py-2.5 rounded-xl bg-rose-500 text-white font-bold text-xs shadow-sm hover:brightness-105 active:scale-95\"\n              >\n                Hapus Kunci\n              </button>\n            </div>\n          </form>\n        )}\n      </div>\n    </div>\n  );\n};\n
+import React, { useState, useEffect } from 'react';
+import {
+  isPinConfigured,
+  verifyPin,
+  setSecurityPin,
+  removeSecurityPin,
+  isBiometricEnabled,
+  setBiometricEnabled,
+  canUseBiometrics,
+} from '../../services/security';
+
+interface SecuritySettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccessToast?: (msg: string) => void;
+}
+
+export const SecuritySettingsModal: React.FC<SecuritySettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccessToast,
+}) => {
+  const [hasPin, setHasPin] = useState<boolean>(false);
+  const [biometricActive, setBiometricActive] = useState<boolean>(false);
+  const [canBiometric, setCanBiometric] = useState<boolean>(false);
+
+  // Setup / Change form
+  const [mode, setMode] = useState<'view' | 'set' | 'change' | 'remove'>('view');
+  const [oldPin, setOldPin] = useState<string>('');
+  const [newPin, setNewPin] = useState<string>('');
+  const [confirmPin, setConfirmPin] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHasPin(isPinConfigured());
+      setBiometricActive(isBiometricEnabled());
+      canUseBiometrics().then(setCanBiometric);
+      setMode('view');
+      setOldPin('');
+      setNewPin('');
+      setConfirmPin('');
+      setErrorMsg(null);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSaveNewPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+      setErrorMsg('PIN harus terdiri dari 6 angka.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setErrorMsg('Konfirmasi PIN tidak cocok.');
+      return;
+    }
+
+    setSecurityPin(newPin);
+    setHasPin(true);
+    setMode('view');
+    onSuccessToast?.('Kunci PIN 6 angka berhasil diaktifkan!');
+  };
+
+  const handleChangePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verifyPin(oldPin)) {
+      setErrorMsg('PIN lama salah.');
+      return;
+    }
+    if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+      setErrorMsg('PIN baru harus terdiri dari 6 angka.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setErrorMsg('Konfirmasi PIN tidak cocok.');
+      return;
+    }
+
+    setSecurityPin(newPin);
+    setMode('view');
+    onSuccessToast?.('PIN keamanan berhasil diperbarui!');
+  };
+
+  const handleRemovePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verifyPin(oldPin)) {
+      setErrorMsg('PIN lama salah.');
+      return;
+    }
+
+    removeSecurityPin();
+    setHasPin(false);
+    setBiometricActive(false);
+    setMode('view');
+    onSuccessToast?.('Kunci PIN dinonaktifkan.');
+  };
+
+  const handleToggleBiometric = () => {
+    const next = !biometricActive;
+    setBiometricActive(next);
+    setBiometricEnabled(next);
+    onSuccessToast?.(
+      next ? 'Autentikasi Biometrik diaktifkan!' : 'Autentikasi Biometrik dimatikan.'
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-sm bg-surface/95 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl border border-white/10 text-on-surface overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[20px]">security</span>
+            <h3 className="text-sm font-bold text-on-surface">Keamanan & Kunci Aplikasi</h3>
+          </div>
+          <button
+            onClick={onClose}
+            type="button"
+            className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-on-surface transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+
+        {errorMsg && (
+          <div className="mt-3 p-2.5 rounded-xl bg-error/15 border border-error/30 text-error text-xs flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* View Mode */}
+        {mode === 'view' && (
+          <div className="space-y-4 pt-3">
+            {/* PIN Card */}
+            <div className="p-3.5 rounded-2xl bg-surface-container-high/60 border border-border/40 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    hasPin ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-outline'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[22px]">
+                    {hasPin ? 'lock' : 'lock_open'}
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-on-surface">Kunci PIN 6 Angka</h4>
+                  <p className="text-[10px] text-outline">
+                    {hasPin ? 'Aktif saat membuka aplikasi' : 'Belum diatur'}
+                  </p>
+                </div>
+              </div>
+
+              {hasPin ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      setMode('change');
+                      setErrorMsg(null);
+                    }}
+                    type="button"
+                    className="px-2.5 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-xs font-semibold text-primary transition-colors"
+                  >
+                    Ubah
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMode('remove');
+                      setErrorMsg(null);
+                    }}
+                    type="button"
+                    className="px-2 py-1.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMode('set');
+                    setErrorMsg(null);
+                  }}
+                  type="button"
+                  className="px-3 py-1.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95 transition-all"
+                >
+                  Aktifkan
+                </button>
+              )}
+            </div>
+
+            {/* Biometric Card (Only available if PIN is active) */}
+            {hasPin && (
+              <div className="p-3.5 rounded-2xl bg-surface-container-high/60 border border-border/40 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      biometricActive
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-surface-container-highest text-outline'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[22px]">fingerprint</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-on-surface">Sidik Jari / Biometrik</h4>
+                    <p className="text-[10px] text-outline">
+                      {canBiometric
+                        ? 'Buka aplikasi dengan sensor biometrik'
+                        : 'Sensor biometrik tidak terdeteksi'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleToggleBiometric}
+                  className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                    biometricActive ? 'bg-primary' : 'bg-surface-container-highest'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+                      biometricActive ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Set New PIN Mode */}
+        {mode === 'set' && (
+          <form onSubmit={handleSaveNewPin} className="space-y-3 pt-3">
+            <p className="text-xs text-outline">
+              Buat 6 digit PIN numerik yang mudah Anda ingat untuk mengunci aplikasi.
+            </p>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">PIN Baru (6 Angka)</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">Konfirmasi PIN</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMode('view')}
+                className="flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95"
+              >
+                Simpan PIN
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Change PIN Mode */}
+        {mode === 'change' && (
+          <form onSubmit={handleChangePin} className="space-y-3 pt-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">PIN Lama</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={oldPin}
+                onChange={(e) => setOldPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">PIN Baru</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">Konfirmasi PIN Baru</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMode('view')}
+                className="flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-primary text-black font-bold text-xs shadow-glow hover:brightness-105 active:scale-95"
+              >
+                Ubah PIN
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Remove PIN Mode */}
+        {mode === 'remove' && (
+          <form onSubmit={handleRemovePin} className="space-y-3 pt-3">
+            <p className="text-xs text-rose-400">
+              Masukkan PIN Anda saat ini untuk menonaktifkan fitur kunci keamanan.
+            </p>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-outline block">PIN Saat Ini</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={oldPin}
+                onChange={(e) => setOldPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                required
+                className="w-full h-11 px-3 text-center text-lg tracking-widest font-bold rounded-xl bg-surface-container border border-border/40 focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMode('view')}
+                className="flex-1 py-2.5 rounded-xl bg-surface-container-high text-xs font-semibold text-on-surface hover:bg-surface-container-highest"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-rose-500 text-white font-bold text-xs shadow-sm hover:brightness-105 active:scale-95"
+              >
+                Hapus Kunci
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+

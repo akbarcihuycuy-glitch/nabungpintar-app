@@ -36,7 +36,11 @@ export function useSyncStatus() {
       setLastSyncedTime(new Date());
       setPendingCount(0);
       setSyncState('synced');
-    } catch (err) {\n      console.warn('Sync failed:', err);\n      setSyncState('offline');\n    }\n  }, [queryClient]);
+    } catch (err) {
+      console.warn('Sync failed:', err);
+      setSyncState('offline');
+    }
+  }, [queryClient]);
 
   // Online / Offline Listeners
   useEffect(() => {

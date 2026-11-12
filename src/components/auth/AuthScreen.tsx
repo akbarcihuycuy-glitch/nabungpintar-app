@@ -143,7 +143,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       setTimeout(() => {
         onSuccess?.();
       }, 400);
-    } catch (idTokenErr: any) {\n      console.warn('signInWithIdToken gagal, beralih otomatis ke Google OAuth redirect:', idTokenErr);
+    } catch (idTokenErr: any) {
+      console.warn('signInWithIdToken gagal, beralih otomatis ke Google OAuth redirect:', idTokenErr);
       await handleGoogleOAuthFallback();
     }
   };
@@ -338,7 +339,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               >
                 {googleLoading ? (
                   <span className="w-5 h-5 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
-                ) : (\n                  <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                ) : (
+                  <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                     <path
                       d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z"
                       fill="#4285F4"
@@ -692,3 +694,4 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     </div>
   );
 };
+

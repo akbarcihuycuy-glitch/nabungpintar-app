@@ -101,3 +101,4 @@ export function useSavingsAlarm(goals: SavingsGoal[]) {
     requestNotificationPermission,
   };
 }
+

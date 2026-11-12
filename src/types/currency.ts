@@ -52,3 +52,4 @@ export const SUPPORTED_CURRENCIES: Record<CurrencyCode, CurrencyInfo> = {
     defaultRateToIdr: 105,
   },
 };
+

@@ -38,3 +38,4 @@ export function useCountUp(target: number, duration: number = 400): number {
 
   return current;
 }
+

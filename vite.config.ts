@@ -18,8 +18,25 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/',
         icons: [
-          {\n            src: 'pwa-192x192.png',\n            sizes: '192x192',\n            type: 'image/png'\n          },\n          {\n            src: 'pwa-512x512.png',\n            sizes: '512x512',\n            type: 'image/png'\n          },\n          {\n            src: 'pwa-512x512.png',\n            sizes: '512x512',\n            type: 'image/png',\n            purpose: 'any maskable'\n          }\n        ]
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
       }
     })
   ]
 });
+

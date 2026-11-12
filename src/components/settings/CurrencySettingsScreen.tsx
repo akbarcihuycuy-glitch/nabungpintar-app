@@ -335,4 +335,25 @@ export const CurrencySettingsScreen: React.FC<CurrencySettingsScreenProps> = ({ 
               onChange={(e) => setCalcCurrency(e.target.value as CurrencyCode)}
               className="bg-surface-container text-xs font-bold text-primary rounded-lg px-2 py-1 border border-border/40 focus:outline-none"
             >
-              {(['USD', 'SGD', 'MYR', 'EUR', 'JPY'] as CurrencyCode[]).map((c) => (\n                <option key={c} value={c}>\n                  {c}\n                </option>\n              ))}\n            </select>\n          </div>\n\n          <span className=\"material-symbols-outlined text-outline text-[20px]\">sync_alt</span>\n\n          <div className=\"flex-1 bg-surface-container-high rounded-xl p-2.5 border border-border/40 flex flex-col justify-center\">\n            <span className=\"text-[10px] text-outline\">Setara IDR:</span>\n            <span className=\"text-xs font-bold text-primary tabular-nums truncate\">\n              {formatCurrency(convertedToIdr, 'IDR')}\n            </span>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n
+              {(['USD', 'SGD', 'MYR', 'EUR', 'JPY'] as CurrencyCode[]).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <span className="material-symbols-outlined text-outline text-[20px]">sync_alt</span>
+
+          <div className="flex-1 bg-surface-container-high rounded-xl p-2.5 border border-border/40 flex flex-col justify-center">
+            <span className="text-[10px] text-outline">Setara IDR:</span>
+            <span className="text-xs font-bold text-primary tabular-nums truncate">
+              {formatCurrency(convertedToIdr, 'IDR')}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+

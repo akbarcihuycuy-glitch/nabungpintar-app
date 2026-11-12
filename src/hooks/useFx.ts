@@ -53,7 +53,8 @@ export function useFx() {
       }
     }, AUTO_REFRESH_INTERVAL_MS);
 
-    return () => clearInterval(pollTimer);\n  }, [fetchRates]);
+    return () => clearInterval(pollTimer);
+  }, [fetchRates]);
 
   // Live seconds ticker updated every second
   useEffect(() => {

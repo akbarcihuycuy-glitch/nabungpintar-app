@@ -115,3 +115,4 @@ export function sendBrowserNotification(title: string, body: string): void {
     console.warn('Browser notification error:', err);
   }
 }
+

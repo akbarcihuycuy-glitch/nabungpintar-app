@@ -146,3 +146,4 @@ export const PwaInstallBanner: React.FC = () => {
     </>
   );
 };
+

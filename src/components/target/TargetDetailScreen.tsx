@@ -100,7 +100,28 @@ export const TargetDetailScreen: React.FC<TargetDetailScreenProps> = ({
       </div>
 
       {/* Celebratory Banner if 100% achieved */}
-      {isCompleted && (\n        <section className=\"relative flex flex-col items-center text-center p-5 rounded-2xl bg-surface-container-low border border-primary/30 shadow-lg overflow-hidden\">\n          <div className=\"absolute -top-10 w-64 h-64 rounded-full bg-primary/15 blur-3xl pointer-events-none\" />\n          <div className=\"relative mb-3\">\n            <div className=\"absolute -inset-2 rounded-full bg-primary/20 blur-md animate-pulse\" />\n            <div className=\"relative w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center shadow-xl\">\n              <div className=\"w-12 h-12 rounded-full bg-primary flex items-center justify-center text-black font-bold\">\n                <span className=\"material-symbols-outlined text-[28px]\">military_tech</span>\n              </div>\n            </div>\n          </div>\n\n          <div className=\"inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-1\">\n            <span className=\"material-symbols-outlined text-[14px]\">check_circle</span>\n            <span>TARGET TERCAPAI 100%</span>\n          </div>\n          <h2 className=\"text-xl font-bold text-on-surface tracking-tight\">Selamat! 🎉</h2>\n          <p className=\"text-xs text-on-surface-variant max-w-[280px] mt-1 leading-relaxed\">\n            Target tabungan impianmu telah terkumpul sepenuhnya. Kerja kerasmu terbayar tuntas!\n          </p>\n        </section>\n      )}
+      {isCompleted && (
+        <section className="relative flex flex-col items-center text-center p-5 rounded-2xl bg-surface-container-low border border-primary/30 shadow-lg overflow-hidden">
+          <div className="absolute -top-10 w-64 h-64 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+          <div className="relative mb-3">
+            <div className="absolute -inset-2 rounded-full bg-primary/20 blur-md animate-pulse" />
+            <div className="relative w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center shadow-xl">
+              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-black font-bold">
+                <span className="material-symbols-outlined text-[28px]">military_tech</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-1">
+            <span className="material-symbols-outlined text-[14px]">check_circle</span>
+            <span>TARGET TERCAPAI 100%</span>
+          </div>
+          <h2 className="text-xl font-bold text-on-surface tracking-tight">Selamat! 🎉</h2>
+          <p className="text-xs text-on-surface-variant max-w-[280px] mt-1 leading-relaxed">
+            Target tabungan impianmu telah terkumpul sepenuhnya. Kerja kerasmu terbayar tuntas!
+          </p>
+        </section>
+      )}
 
       {/* Target Identity Card */}
       {(() => {
@@ -509,7 +530,46 @@ export const TargetDetailScreen: React.FC<TargetDetailScreenProps> = ({
           <div className="flex flex-col gap-2">
             {entries.map((entry) => {
               const isTopUp = entry.kind === 'topup';
-              return (\n                <div\n                  key={entry.id}\n                  className=\"flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-border/20\"\n                >\n                  <div className=\"flex items-center gap-2.5 min-w-0\">\n                    <div\n                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${\n                        isTopUp\n                          ? 'bg-primary/20 text-primary'\n                          : 'bg-error/20 text-error'\n                      }`}\n                    >\n                      <span className=\"material-symbols-outlined text-[18px]\">\n                        {isTopUp ? 'south_west' : 'north_east'}\n                      </span>\n                    </div>\n                    <div className=\"min-w-0\">\n                      <p className=\"text-xs font-semibold text-on-surface truncate\">\n                        {entry.note || (isTopUp ? 'Top Up Celengan' : 'Tarik Tabungan')}\n                      </p>\n                      <p className=\"text-[10px] text-outline\">\n                        {formatDateIndo(entry.occurred_on)}\n                      </p>\n                    </div>\n                  </div>\n\n                  <div className=\"text-right shrink-0\">\n                    <span\n                      className={`text-xs font-bold tabular-nums ${\n                        isTopUp ? 'text-primary' : 'text-error'\n                      }`}\n                    >\n                      {isTopUp ? '+' : '-'}\n                      {formatMoney(entry.amount)}\n                    </span>\n                    <p className=\"text-[10px] text-outline\">Berhasil</p>\n                  </div>\n                </div>\n              );
+              return (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-border/20"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        isTopUp
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-error/20 text-error'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {isTopUp ? 'south_west' : 'north_east'}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-on-surface truncate">
+                        {entry.note || (isTopUp ? 'Top Up Celengan' : 'Tarik Tabungan')}
+                      </p>
+                      <p className="text-[10px] text-outline">
+                        {formatDateIndo(entry.occurred_on)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span
+                      className={`text-xs font-bold tabular-nums ${
+                        isTopUp ? 'text-primary' : 'text-error'
+                      }`}
+                    >
+                      {isTopUp ? '+' : '-'}
+                      {formatMoney(entry.amount)}
+                    </span>
+                    <p className="text-[10px] text-outline">Berhasil</p>
+                  </div>
+                </div>
+              );
             })}
           </div>
         )}
@@ -554,3 +614,4 @@ export const TargetDetailScreen: React.FC<TargetDetailScreenProps> = ({
     </div>
   );
 };
+

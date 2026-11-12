@@ -119,3 +119,4 @@ export const IosInstallGuideModal: React.FC<IosInstallGuideModalProps> = ({ isOp
     </div>
   );
 };
+

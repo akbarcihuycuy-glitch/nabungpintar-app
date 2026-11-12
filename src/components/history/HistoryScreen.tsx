@@ -179,7 +179,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onRecordClick }) =
       {/* Main Ledger Stream */}
       {isLoading ? (
         <div className="space-y-4 pt-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (\n            <SkeletonBox key={i} className="h-16 w-full rounded-xl" />\n          ))}
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <SkeletonBox key={i} className="h-16 w-full rounded-xl" />
+          ))}
         </div>
       ) : isError ? (
         <div className="p-6 rounded-2xl bg-surface-container border border-expense/30 text-center space-y-3">
@@ -348,3 +350,4 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onRecordClick }) =
     </div>
   );
 };
+

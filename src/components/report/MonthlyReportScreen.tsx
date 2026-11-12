@@ -302,4 +302,89 @@ export const MonthlyReportScreen: React.FC<MonthlyReportScreenProps> = ({ onBack
         </div>
 
         {/* Visual Allocation Stack Bar */}
-        {totalIncome > 0 && (\n          <div className=\"flex flex-col gap-1.5 pt-1\">\n            <div className=\"flex justify-between items-center text-[11px] text-outline\">\n              <span>Alokasi Pendapatan</span>\n              <span className=\"text-on-surface-variant font-medium\">\n                Disimpan {Math.max(0, savingsRatio || 0)}% • Belanja{' '}\n                {Math.min(100, Math.round((totalExpense / totalIncome) * 100))}%\n              </span>\n            </div>\n            <div className=\"h-2 w-full rounded-full bg-surface-container-highest overflow-hidden flex\">\n              <div\n                className=\"h-full bg-primary transition-all duration-500\"\n                style={{ width: `${Math.max(0, savingsRatio || 0)}%` }}\n              />\n              <div\n                className=\"h-full bg-error/70 transition-all duration-500\"\n                style={{\n                  width: `${Math.min(100, Math.round((totalExpense / totalIncome) * 100))}%`,\n                }}\n              />\n            </div>\n          </div>\n        )}\n      </section>\n\n      {/* Category Breakdown */}\n      <div className=\"bg-surface-container rounded-2xl p-4 shadow-sm border border-border/40 space-y-3\">\n        <div className=\"flex items-center justify-between\">\n          <div>\n            <h3 className=\"text-sm font-bold text-on-surface\">Distribusi Pengeluaran</h3>\n            <p className=\"text-xs text-outline\">Berdasarkan kategori belanja bulan ini</p>\n          </div>\n          <span className=\"text-xs font-bold text-on-surface tabular-nums\">\n            {formatMoney(totalExpense)}\n          </span>\n        </div>\n\n        {categoryBreakdown.length === 0 ? (\n          <div className=\"py-6 text-center text-xs text-outline\">\n            Belum ada pengeluaran pada periode {monthLabel}\n          </div>\n        ) : (\n          <div className=\"flex flex-col gap-3 pt-1\">\n            {categoryBreakdown.map((cat, idx) => (\n              <div key={idx} className=\"flex flex-col gap-1.5\">\n                <div className=\"flex items-center justify-between text-xs\">\n                  <div className=\"flex items-center gap-2\">\n                    <div\n                      className=\"w-7 h-7 rounded-lg flex items-center justify-center shrink-0\"\n                      style={{\n                        backgroundColor: `${cat.color}20`,\n                        color: cat.color,\n                      }}\n                    >\n                      <span className=\"material-symbols-outlined text-[16px]\">{cat.icon}</span>\n                    </div>\n                    <span className=\"font-semibold text-on-surface\">{cat.name}</span>\n                  </div>\n                  <div className=\"flex items-center gap-2\">\n                    <span className=\"font-bold text-on-surface tabular-nums\">\n                      {formatMoney(cat.amount)}\n                    </span>\n                    <span className=\"text-[11px] text-outline font-semibold w-8 text-right\">\n                      {cat.percentage}%\n                    </span>\n                  </div>\n                </div>\n\n                <div className=\"w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden\">\n                  <div\n                    className=\"h-full rounded-full transition-all duration-500\"\n                    style={{\n                      width: `${cat.percentage}%`,\n                      backgroundColor: cat.color,\n                    }}\n                  />\n                </div>\n              </div>\n            ))}\n          </div>\n        )}\n      </div>\n    </div>\n  );\n};\n
+        {totalIncome > 0 && (
+          <div className="flex flex-col gap-1.5 pt-1">
+            <div className="flex justify-between items-center text-[11px] text-outline">
+              <span>Alokasi Pendapatan</span>
+              <span className="text-on-surface-variant font-medium">
+                Disimpan {Math.max(0, savingsRatio || 0)}% • Belanja{' '}
+                {Math.min(100, Math.round((totalExpense / totalIncome) * 100))}%
+              </span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-surface-container-highest overflow-hidden flex">
+              <div
+                className="h-full bg-primary transition-all duration-500"
+                style={{ width: `${Math.max(0, savingsRatio || 0)}%` }}
+              />
+              <div
+                className="h-full bg-error/70 transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, Math.round((totalExpense / totalIncome) * 100))}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Category Breakdown */}
+      <div className="bg-surface-container rounded-2xl p-4 shadow-sm border border-border/40 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-on-surface">Distribusi Pengeluaran</h3>
+            <p className="text-xs text-outline">Berdasarkan kategori belanja bulan ini</p>
+          </div>
+          <span className="text-xs font-bold text-on-surface tabular-nums">
+            {formatMoney(totalExpense)}
+          </span>
+        </div>
+
+        {categoryBreakdown.length === 0 ? (
+          <div className="py-6 text-center text-xs text-outline">
+            Belum ada pengeluaran pada periode {monthLabel}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 pt-1">
+            {categoryBreakdown.map((cat, idx) => (
+              <div key={idx} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                      style={{
+                        backgroundColor: `${cat.color}20`,
+                        color: cat.color,
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{cat.icon}</span>
+                    </div>
+                    <span className="font-semibold text-on-surface">{cat.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-on-surface tabular-nums">
+                      {formatMoney(cat.amount)}
+                    </span>
+                    <span className="text-[11px] text-outline font-semibold w-8 text-right">
+                      {cat.percentage}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${cat.percentage}%`,
+                      backgroundColor: cat.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+

@@ -37,3 +37,9 @@ pnpm-debug.log*
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Project-specific ignored folders
+animasi_kaca_tempered/
+stitch_nabungpintar_finance_tracker_dashboard/
+
+

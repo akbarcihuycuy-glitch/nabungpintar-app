@@ -454,7 +454,8 @@ class LocalStorageService {
 
     // Seed 2 demo savings goals
     const demoGoals: SavingsGoal[] = [
-      {\n        id: 'goal-1',
+      {
+        id: 'goal-1',
         user_id: 'local_user',
         name: 'Dana Darurat 6 Bulan',
         target_amount: 50000000,

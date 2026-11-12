@@ -89,3 +89,4 @@ fs.writeFileSync(path.join(publicDir, 'apple-touch-icon.png'), createPNG(180, 18
 fs.writeFileSync(path.join(publicDir, 'favicon.ico'), createPNG(32, 32, 13, 19, 34));
 
 console.log('PWA icons created successfully in public/');
+

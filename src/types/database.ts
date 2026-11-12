@@ -109,3 +109,4 @@ export interface DashboardSummaryData {
   recent_transactions: Transaction[];
   active_goals: SavingsGoal[];
 }
+

@@ -115,3 +115,4 @@ export async function setHideBalanceSetting(hide: boolean, userId?: string): Pro
     }
   }
 }
+

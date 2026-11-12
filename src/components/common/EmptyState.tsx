@@ -9,7 +9,8 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({
   onRecordClick,
   onGoalClick,
 }) => {
-  return (\n    <div className="flex flex-col space-y-4">
+  return (
+    <div className="flex flex-col space-y-4">
       {/* Dedicated Empty State Feature Card */}
       <div className="relative overflow-hidden rounded-2xl bg-surface-container p-6 text-center shadow-lg border border-border/40">
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" />
@@ -147,3 +148,4 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({
     </div>
   );
 };
+

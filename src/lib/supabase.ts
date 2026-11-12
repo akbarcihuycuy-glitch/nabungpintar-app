@@ -80,4 +80,123 @@ export function setGuestModeActive(_active: boolean) {
 let authPromise: Promise<string | null> | null = null;
 let cachedUserId: string | null = null;
 
-export async function ensureAuth(): Promise<string | null> {\n  if (!supabase || !isSupabaseConfigured) return null;\n\n  if (cachedUserId) return cachedUserId;\n  if (authPromise) return authPromise;\n\n  authPromise = (async () => {\n    try {\n      const { data: sessionData } = await supabase.auth.getSession();\n      if (sessionData.session?.user) {\n        cachedUserId = sessionData.session.user.id;\n        return cachedUserId;\n      }\n    } catch (err) {\n      console.warn('ensureAuth error:', err);\n    }\n    return null;\n  })();\n\n  return authPromise;\n}\n\n// Reset auth cache ONLY on explicit signed_out event\nif (supabase) {\n  supabase.auth.onAuthStateChange((event, session) => {\n    if (event === 'SIGNED_OUT') {\n      authPromise = null;\n      cachedUserId = null;\n    } else if (session?.user?.id) {\n      cachedUserId = session.user.id;\n    }\n  });\n}\n\n// Auth Actions\nexport async function signInWithEmail(email: string, password: string) {\n  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');\n  setGuestModeActive(false);\n  authPromise = null;\n  cachedUserId = null;\n  const result = await supabase.auth.signInWithPassword({\n    email: email.trim(),\n    password,\n  });\n  if (result.error) throw result.error;\n  if (result.data.user) {\n    cachedUserId = result.data.user.id;\n  }\n  return result.data;\n}\n\nexport async function signUpWithEmail(email: string, password: string, fullName: string) {\n  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');\n  setGuestModeActive(false);\n  authPromise = null;\n  cachedUserId = null;\n  const result = await supabase.auth.signUp({\n    email: email.trim(),\n    password,\n    options: {\n      data: {\n        full_name: fullName.trim(),\n      },\n    },\n  });\n  if (result.error) throw result.error;\n  if (result.data.user) {\n    cachedUserId = result.data.user.id;\n  }\n  return result.data;\n}\n\nexport async function signInWithGoogle() {\n  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');\n  setGuestModeActive(false);\n  authPromise = null;\n  cachedUserId = null;\n  const result = await supabase.auth.signInWithOAuth({\n    provider: 'google',\n    options: {\n      redirectTo: window.location.origin,\n    },\n  });\n  if (result.error) throw result.error;\n  return result.data;\n}\n\nexport const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';\n\n/**\n * Sign in using Google Identity Services (GIS) ID Token (JWT).\n * This allows the popup to show \"NabungPintar\" branding directly from your Google Cloud Client ID.\n */\nexport async function signInWithGoogleIdToken(idToken: string) {\n  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');\n  setGuestModeActive(false);\n  authPromise = null;\n  cachedUserId = null;\n  const result = await supabase.auth.signInWithIdToken({\n    provider: 'google',\n    token: idToken,\n  });\n  if (result.error) throw result.error;\n  if (result.data.user) {\n    cachedUserId = result.data.user.id;\n  }\n  return result.data;\n}\n\nexport async function signOutUser() {\n  authPromise = null;\n  cachedUserId = null;\n  if (supabase) {\n    try {\n      await supabase.auth.signOut();\n    } catch (err) {\n      console.warn('Sign out warning:', err);\n    }\n  }\n}\n
+export async function ensureAuth(): Promise<string | null> {
+  if (!supabase || !isSupabaseConfigured) return null;
+
+  if (cachedUserId) return cachedUserId;
+  if (authPromise) return authPromise;
+
+  authPromise = (async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user) {
+        cachedUserId = sessionData.session.user.id;
+        return cachedUserId;
+      }
+    } catch (err) {
+      console.warn('ensureAuth error:', err);
+    }
+    return null;
+  })();
+
+  return authPromise;
+}
+
+// Reset auth cache ONLY on explicit signed_out event
+if (supabase) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      authPromise = null;
+      cachedUserId = null;
+    } else if (session?.user?.id) {
+      cachedUserId = session.user.id;
+    }
+  });
+}
+
+// Auth Actions
+export async function signInWithEmail(email: string, password: string) {
+  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');
+  setGuestModeActive(false);
+  authPromise = null;
+  cachedUserId = null;
+  const result = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+  if (result.error) throw result.error;
+  if (result.data.user) {
+    cachedUserId = result.data.user.id;
+  }
+  return result.data;
+}
+
+export async function signUpWithEmail(email: string, password: string, fullName: string) {
+  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');
+  setGuestModeActive(false);
+  authPromise = null;
+  cachedUserId = null;
+  const result = await supabase.auth.signUp({
+    email: email.trim(),
+    password,
+    options: {
+      data: {
+        full_name: fullName.trim(),
+      },
+    },
+  });
+  if (result.error) throw result.error;
+  if (result.data.user) {
+    cachedUserId = result.data.user.id;
+  }
+  return result.data;
+}
+
+export async function signInWithGoogle() {
+  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');
+  setGuestModeActive(false);
+  authPromise = null;
+  cachedUserId = null;
+  const result = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+    },
+  });
+  if (result.error) throw result.error;
+  return result.data;
+}
+
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
+/**
+ * Sign in using Google Identity Services (GIS) ID Token (JWT).
+ * This allows the popup to show "NabungPintar" branding directly from your Google Cloud Client ID.
+ */
+export async function signInWithGoogleIdToken(idToken: string) {
+  if (!supabase) throw new Error('Supabase client belum terkonfigurasi');
+  setGuestModeActive(false);
+  authPromise = null;
+  cachedUserId = null;
+  const result = await supabase.auth.signInWithIdToken({
+    provider: 'google',
+    token: idToken,
+  });
+  if (result.error) throw result.error;
+  if (result.data.user) {
+    cachedUserId = result.data.user.id;
+  }
+  return result.data;
+}
+
+export async function signOutUser() {
+  authPromise = null;
+  cachedUserId = null;
+  if (supabase) {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out warning:', err);
+    }
+  }
+}

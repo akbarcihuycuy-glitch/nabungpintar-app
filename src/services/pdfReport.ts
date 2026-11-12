@@ -52,7 +52,8 @@ export function generateFinancialReportPdf({
   doc.rect(0, 36, pageWidth, 2, 'F');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);\n  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
   doc.text('NabungPintar', 14, 16);
 
   doc.setFont('helvetica', 'normal');
@@ -305,3 +306,4 @@ export function generateFinancialReportPdf({
   const cleanFilename = `Laporan_Keuangan_NabungPintar_${monthLabel.replace(/\s+/g, '_')}.pdf`;
   doc.save(cleanFilename);
 }
+

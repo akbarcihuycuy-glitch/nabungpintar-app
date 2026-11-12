@@ -291,7 +291,18 @@ begin
   -- 5. Daily Cashflow series for the selected timeframe
   select json_agg(day_series)
   into v_daily_cashflow
-  from (\n    select\n      d.day::text as date,\n      coalesce(sum(case when t.kind = 'income' then t.amount_base else 0 end), 0) as income,\n      coalesce(sum(case when t.kind = 'expense' then t.amount_base else 0 end), 0) as expense\n    from generate_series(v_curr_start, v_curr_end, interval '1 day') as d(day)\n    left join transactions t\n      on t.user_id = v_user_id\n      and t.occurred_on = d.day::date\n    group by d.day\n    order by d.day asc\n  ) day_series;
+  from (
+    select
+      d.day::text as date,
+      coalesce(sum(case when t.kind = 'income' then t.amount_base else 0 end), 0) as income,
+      coalesce(sum(case when t.kind = 'expense' then t.amount_base else 0 end), 0) as expense
+    from generate_series(v_curr_start, v_curr_end, interval '1 day') as d(day)
+    left join transactions t
+      on t.user_id = v_user_id
+      and t.occurred_on = d.day::date
+    group by d.day
+    order by d.day asc
+  ) day_series;
 
   -- Build resulting JSON
   v_result := json_build_object(
@@ -320,3 +331,4 @@ begin
 exception when others then
   null; -- Ignore if publication or table already added
 end $$;
+

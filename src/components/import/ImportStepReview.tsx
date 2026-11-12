@@ -185,7 +185,8 @@ export const ImportStepReview: React.FC<ImportStepReviewProps> = ({
                     <div className="flex items-center gap-1.5 text-[10px] text-outline mt-0.5">
                       <span>{formatDateIndo(item.occurred_on)}</span>
                       {item.category_name && <span>• {item.category_name}</span>}
-                      {item.status === 'duplicate' && (\n                        <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
+                      {item.status === 'duplicate' && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
                           Duplikat
                         </span>
                       )}
@@ -254,3 +255,4 @@ export const ImportStepReview: React.FC<ImportStepReviewProps> = ({
     </div>
   );
 };
+

@@ -282,7 +282,8 @@ function MainApp() {
 
           {/* Tab: Target Celengan (S05 & S06) */}
           {currentTab === 'target' &&
-            (selectedGoal ? (\n              <TargetDetailScreen
+            (selectedGoal ? (
+              <TargetDetailScreen
                 goal={selectedGoal}
                 onBack={() => setSelectedGoal(null)}
                 onEditGoal={handleEditGoal}

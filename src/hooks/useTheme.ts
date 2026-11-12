@@ -48,3 +48,4 @@ export function useTheme() {
 
   return { theme, setTheme, toggleTheme, isDark: document.documentElement.classList.contains('dark') };
 }
+

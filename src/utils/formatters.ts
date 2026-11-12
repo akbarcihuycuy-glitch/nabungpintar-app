@@ -86,3 +86,4 @@ export function formatPercentage(val: number | null | 'Baru'): string {
   if (val > 0) return `+${rounded}%`;
   return `${rounded}%`;
 }
+

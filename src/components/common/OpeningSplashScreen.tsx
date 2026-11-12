@@ -79,7 +79,8 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
 
         {/* Subtitle / Personalized Greeting */}
         <div className="min-h-[28px] pt-1">
-          {user && stage === 'greeting' ? (\n            <p className="text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5 animate-fade-in">
+          {user && stage === 'greeting' ? (
+            <p className="text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5 animate-fade-in">
               <span>Selamat datang kembali, {fullName}</span>
               <span className="animate-pulse">✨</span>
             </p>
@@ -99,3 +100,4 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
     </div>
   );
 };
+

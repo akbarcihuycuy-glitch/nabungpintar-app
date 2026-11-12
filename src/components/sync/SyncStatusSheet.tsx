@@ -258,3 +258,4 @@ export const SyncStatusSheet: React.FC<SyncStatusSheetProps> = ({
     </div>
   );
 };
+

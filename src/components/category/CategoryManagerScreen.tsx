@@ -232,7 +232,8 @@ export const CategoryManagerScreen: React.FC<CategoryManagerScreenProps> = ({ on
             <SkeletonBox key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
-      ) : isError ? (\n        <div className="p-6 rounded-2xl bg-surface-container border border-expense/30 text-center">
+      ) : isError ? (
+        <div className="p-6 rounded-2xl bg-surface-container border border-expense/30 text-center">
           <p className="text-xs text-on-surface">Gagal memuat kategori</p>
         </div>
       ) : (
@@ -581,3 +582,4 @@ export const CategoryManagerScreen: React.FC<CategoryManagerScreenProps> = ({ on
     </div>
   );
 };
+

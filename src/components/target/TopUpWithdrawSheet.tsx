@@ -185,7 +185,12 @@ export const TopUpWithdrawSheet: React.FC<TopUpWithdrawSheetProps> = ({
           </button>
         </div>
 
-        {errorMsg && (\n          <div className=\"mb-3 p-2.5 rounded-xl bg-error/15 border border-error/30 text-error text-xs flex items-center gap-2\">\n            <span className=\"material-symbols-outlined text-[16px]\">error</span>\n            <span>{errorMsg}</span>\n          </div>\n        )}
+        {errorMsg && (
+          <div className="mb-3 p-2.5 rounded-xl bg-error/15 border border-error/30 text-error text-xs flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
         {/* Target Mini Preview Card */}
         <div className="p-3.5 rounded-2xl bg-surface-container-low mb-4 border border-border/30 flex flex-col gap-2">
@@ -387,3 +392,4 @@ export const TopUpWithdrawSheet: React.FC<TopUpWithdrawSheetProps> = ({
     </div>
   );
 };
+

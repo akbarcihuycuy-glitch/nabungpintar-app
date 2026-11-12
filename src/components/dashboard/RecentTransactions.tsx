@@ -9,4 +9,129 @@ interface RecentTransactionsProps {
   onItemClick?: (tx: Transaction) => void;
 }
 
-export const RecentTransactions: React.FC<RecentTransactionsProps> = ({\n  transactions,\n  onViewAll,\n  onItemClick,\n}) => {\n  const { formatMoney } = useFx();\n\n  return (\n    <section className=\"flex flex-col space-y-3\">\n      {/* Header */}\n      <div className=\"flex items-center justify-between\">\n        <div className=\"flex items-center space-x-2\">\n          <div className=\"w-8 h-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary\">\n            <span className=\"material-symbols-outlined text-[18px]\">receipt_long</span>\n          </div>\n          <div>\n            <span className=\"text-sm font-bold text-on-surface block leading-tight\">\n              Transaksi Terbaru\n            </span>\n            <span className=\"text-[10px] text-outline\">Glowing Timeline Feed</span>\n          </div>\n        </div>\n\n        <button\n          onClick={onViewAll}\n          type=\"button\"\n          className=\"text-xs text-primary font-bold hover:underline px-2.5 py-1 rounded-full bg-primary/10 border border-primary/25 active:scale-95 transition-all\"\n        >\n          Lihat Semua\n        </button>\n      </div>\n\n      {/* Timeline Feed Container */}\n      <div className=\"relative rounded-3xl p-4 overflow-hidden backdrop-blur-2xl border\n        /* Dark Glass */\n        dark:bg-slate-900/80 dark:border-white/10 dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)]\n        /* Light Glass */\n        bg-white/85 border-slate-200/80 shadow-[0_12px_30px_rgba(0,0,0,0.05)]\n      \">\n        {transactions.length === 0 ? (\n          <div className=\"p-8 text-center text-xs text-outline space-y-1\">\n            <span className=\"material-symbols-outlined text-[28px] text-outline block mb-1\">\n              history_toggle_drop_down\n            </span>\n            <span className=\"font-semibold text-on-surface block\">Belum ada transaksi</span>\n            <span>Mulai catat pengeluaran atau pemasukan hari ini.</span>\n          </div>\n        ) : (\n          <div className=\"relative pl-4 space-y-2.5\">\n            {/* Luminous Vertical Timeline Track */}\n            <div className=\"absolute left-1.5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary via-cyan-400 to-transparent opacity-40\" />\n\n            {transactions.map((tx) => {\n              const isIncome = tx.kind === 'income';\n              const iconName = tx.category?.icon || (isIncome ? 'payments' : 'receipt_long');\n              const catColor = tx.category?.color || (isIncome ? '#2DD4A7' : '#F87171');\n\n              return (\n                <div\n                  key={tx.id}\n                  onClick={() => onItemClick?.(tx)}\n                  className=\"group relative flex items-center justify-between p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-white/10 dark:border-white/5 transition-all duration-200 cursor-pointer active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-lg\"\n                >\n                  {/* Radiant Neon Timeline Node Dot */}\n                  <div\n                    className=\"absolute -left-[19px] w-2.5 h-2.5 rounded-full border-2 border-surface transition-transform duration-300 group-hover:scale-125\"\n                    style={{\n                      backgroundColor: isIncome ? '#2DD4A7' : '#F43F5E',\n                      boxShadow: isIncome\n                        ? '0 0 8px rgba(45,212,167,0.8)'\n                        : '0 0 8px rgba(244,63,94,0.8)',\n                    }}\n                  />\n\n                  {/* Left: Squircle Glass Icon + Description */}\n                  <div className=\"flex items-center space-x-3 min-w-0\">\n                    <div\n                      className=\"w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105\"\n                      style={{\n                        backgroundColor: `${catColor}20`,\n                        color: catColor,\n                        borderColor: `${catColor}35`,\n                        boxShadow: `0 0 12px ${catColor}25`,\n                      }}\n                    >\n                      <span className=\"material-symbols-outlined text-[20px]\">{iconName}</span>\n                    </div>\n\n                    <div className=\"flex flex-col min-w-0\">\n                      <span className=\"text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors\">\n                        {tx.note || tx.category?.name || (isIncome ? 'Pemasukan' : 'Pengeluaran')}\n                      </span>\n                      <span className=\"text-[11px] text-outline truncate flex items-center gap-1 mt-0.5\">\n                        {tx.category?.name && (\n                          <span className=\"font-semibold text-on-surface/80\">\n                            {tx.category.name} •\n                          </span>\n                        )}\n                        <span>{formatRelativeDate(tx.occurred_on)}</span>\n                      </span>\n                    </div>\n                  </div>\n\n                  {/* Right: Amount with Neon Bold Style */}\n                  <div className=\"flex flex-col items-end shrink-0 ml-3\">\n                    <span\n                      className={`text-sm font-extrabold tabular-nums drop-shadow-sm ${\n                        isIncome ? 'text-income' : 'text-expense'\n                      }`}\n                    >\n                      {isIncome ? '+ ' : '- '}\n                      {formatMoney(tx.amount_base)}\n                    </span>\n                    <span className=\"text-[10px] uppercase font-bold tracking-wider text-outline\">\n                      {tx.currency}\n                    </span>\n                  </div>\n                </div>\n              );\n            })}\n          </div>\n        )}\n      </div>\n    </section>\n  );\n};\n
+export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
+  transactions,
+  onViewAll,
+  onItemClick,
+}) => {
+  const { formatMoney } = useFx();
+
+  return (
+    <section className="flex flex-col space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+          </div>
+          <div>
+            <span className="text-sm font-bold text-on-surface block leading-tight">
+              Transaksi Terbaru
+            </span>
+            <span className="text-[10px] text-outline">Glowing Timeline Feed</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onViewAll}
+          type="button"
+          className="text-xs text-primary font-bold hover:underline px-2.5 py-1 rounded-full bg-primary/10 border border-primary/25 active:scale-95 transition-all"
+        >
+          Lihat Semua
+        </button>
+      </div>
+
+      {/* Timeline Feed Container */}
+      <div className="relative rounded-3xl p-4 overflow-hidden backdrop-blur-2xl border
+        /* Dark Glass */
+        dark:bg-slate-900/80 dark:border-white/10 dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)]
+        /* Light Glass */
+        bg-white/85 border-slate-200/80 shadow-[0_12px_30px_rgba(0,0,0,0.05)]
+      ">
+        {transactions.length === 0 ? (
+          <div className="p-8 text-center text-xs text-outline space-y-1">
+            <span className="material-symbols-outlined text-[28px] text-outline block mb-1">
+              history_toggle_drop_down
+            </span>
+            <span className="font-semibold text-on-surface block">Belum ada transaksi</span>
+            <span>Mulai catat pengeluaran atau pemasukan hari ini.</span>
+          </div>
+        ) : (
+          <div className="relative pl-4 space-y-2.5">
+            {/* Luminous Vertical Timeline Track */}
+            <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary via-cyan-400 to-transparent opacity-40" />
+
+            {transactions.map((tx) => {
+              const isIncome = tx.kind === 'income';
+              const iconName = tx.category?.icon || (isIncome ? 'payments' : 'receipt_long');
+              const catColor = tx.category?.color || (isIncome ? '#2DD4A7' : '#F87171');
+
+              return (
+                <div
+                  key={tx.id}
+                  onClick={() => onItemClick?.(tx)}
+                  className="group relative flex items-center justify-between p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-white/10 dark:border-white/5 transition-all duration-200 cursor-pointer active:scale-[0.99] hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  {/* Radiant Neon Timeline Node Dot */}
+                  <div
+                    className="absolute -left-[19px] w-2.5 h-2.5 rounded-full border-2 border-surface transition-transform duration-300 group-hover:scale-125"
+                    style={{
+                      backgroundColor: isIncome ? '#2DD4A7' : '#F43F5E',
+                      boxShadow: isIncome
+                        ? '0 0 8px rgba(45,212,167,0.8)'
+                        : '0 0 8px rgba(244,63,94,0.8)',
+                    }}
+                  />
+
+                  {/* Left: Squircle Glass Icon + Description */}
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105"
+                      style={{
+                        backgroundColor: `${catColor}20`,
+                        color: catColor,
+                        borderColor: `${catColor}35`,
+                        boxShadow: `0 0 12px ${catColor}25`,
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">{iconName}</span>
+                    </div>
+
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                        {tx.note || tx.category?.name || (isIncome ? 'Pemasukan' : 'Pengeluaran')}
+                      </span>
+                      <span className="text-[11px] text-outline truncate flex items-center gap-1 mt-0.5">
+                        {tx.category?.name && (
+                          <span className="font-semibold text-on-surface/80">
+                            {tx.category.name} •
+                          </span>
+                        )}
+                        <span>{formatRelativeDate(tx.occurred_on)}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Amount with Neon Bold Style */}
+                  <div className="flex flex-col items-end shrink-0 ml-3">
+                    <span
+                      className={`text-sm font-extrabold tabular-nums drop-shadow-sm ${
+                        isIncome ? 'text-income' : 'text-expense'
+                      }`}
+                    >
+                      {isIncome ? '+ ' : '- '}
+                      {formatMoney(tx.amount_base)}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-outline">
+                      {tx.currency}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};

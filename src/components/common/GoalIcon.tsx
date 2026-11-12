@@ -70,3 +70,4 @@ export const GoalIcon: React.FC<GoalIconProps> = ({
     </span>
   );
 };
+

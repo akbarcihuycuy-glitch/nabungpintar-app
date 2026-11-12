@@ -66,7 +66,8 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             <span className="material-symbols-outlined text-primary text-[20px]">vpn_key</span>
             <h3 className="text-sm font-bold text-on-surface">Buat Kata Sandi Baru</h3>
           </div>
-          {onClose && (\n            <button
+          {onClose && (
+            <button
               onClick={onClose}
               type="button"
               className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-outline hover:text-on-surface transition-colors"
@@ -142,3 +143,4 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     </div>
   );
 };
+
