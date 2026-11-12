@@ -3,24 +3,17 @@ import { User } from '@supabase/supabase-js';
 
 interface OpeningSplashScreenProps {
   user: User | null;
-  isSessionChecking: boolean;
+  isSessionChecking?: boolean;
   onFinishOpening: () => void;
 }
 
 export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
   user,
-  isSessionChecking,
   onFinishOpening,
 }) => {
-  const [stage, setStage] = useState<'intro' | 'greeting' | 'exit'>('intro');
+  const [stage, setStage] = useState<'intro' | 'exit'>('intro');
   const onFinishRef = useRef(onFinishOpening);
   onFinishRef.current = onFinishOpening;
-
-  const fullName =
-    user?.user_metadata?.full_name ||
-    user?.email?.split('@')[0] ||
-    (typeof window !== 'undefined' ? localStorage.getItem('np_user_name') : null) ||
-    '';
 
   const handleDismiss = () => {
     setStage('exit');
@@ -28,31 +21,24 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
   };
 
   useEffect(() => {
-    // 1. First stage: spring scale-up & glow (700ms)
-    const introTimer = setTimeout(() => {
-      setStage('greeting');
-    }, 700);
-
-    // 2. HARD GUARANTEE: Exactly 1.5s (1500ms) maximum runtime
-    // Regardless of network, session check, or re-renders, splash MUST dismiss!
-    const hardLimitTimer = setTimeout(() => {
+    // Ultra-snappy splash: brief 350ms brand intro, then smooth exit
+    const exitTimer = setTimeout(() => {
       setStage('exit');
       setTimeout(() => {
         onFinishRef.current();
-      }, 250);
-    }, 1500);
+      }, 150); // fast 150ms fade
+    }, 350);
 
     return () => {
-      clearTimeout(introTimer);
-      clearTimeout(hardLimitTimer);
+      clearTimeout(exitTimer);
     };
   }, []);
 
   return (
     <div
       onClick={handleDismiss}
-      className={`fixed inset-0 z-50 bg-[#0B1120] text-[#E8EEF9] flex flex-col items-center justify-center p-6 selection:bg-primary selection:text-black font-sans transition-all duration-300 cursor-pointer ${
-        stage === 'exit' ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+      className={`fixed inset-0 z-[100] bg-[#0B1120] text-[#E8EEF9] flex flex-col items-center justify-center p-6 selection:bg-primary selection:text-black font-sans transition-opacity duration-200 cursor-pointer ${
+        stage === 'exit' ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
       title="Ketuk untuk langsung membuka aplikasi"
     >
@@ -61,13 +47,13 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-sky-500/10 blur-2xl pointer-events-none" />
 
       {/* Main Brand Logo & Glowing Ring */}
-      <div className="relative flex flex-col items-center text-center z-10 space-y-4">
+      <div className="relative flex flex-col items-center text-center z-10 space-y-4 pointer-events-none select-none">
         <div className="relative flex items-center justify-center">
           {/* Animated Glowing Outer Ring */}
           <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-primary via-emerald-400 to-sky-400 opacity-70 blur-md animate-pulse" />
           
           {/* Glass Logo Container with Spring Scale */}
-          <div className="relative w-20 h-20 rounded-2xl bg-surface-container-high/90 border border-primary/40 flex items-center justify-center shadow-glow transform transition-transform duration-700 ease-out scale-100 hover:scale-105">
+          <div className="relative w-20 h-20 rounded-2xl bg-surface-container-high/90 border border-primary/40 flex items-center justify-center shadow-glow transform transition-transform duration-300 scale-100 hover:scale-105">
             <span className="material-symbols-outlined text-primary text-[42px] animate-bounce">
               account_balance_wallet
             </span>
@@ -87,28 +73,13 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
           </p>
         </div>
 
-        {/* Subtitle / Personalized Greeting */}
-        <div className="min-h-[28px] pt-1">
-          {user && stage === 'greeting' ? (
-            <p className="text-xs font-semibold text-emerald-400 flex items-center justify-center gap-1.5 animate-fade-in">
-              <span>Selamat datang kembali, {fullName}</span>
-              <span className="animate-pulse">✨</span>
-            </p>
-          ) : (
-            <p className="text-[11px] text-outline/80 flex items-center justify-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-              <span>Memuat sistem keamanan & data cloud...</span>
-            </p>
-          )}
-        </div>
-
         {/* Shimmer Progress Line */}
         <div className="w-48 h-1 rounded-full bg-surface-container-highest overflow-hidden relative mt-2">
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-sky-400 to-emerald-400 rounded-full animate-shimmer" />
         </div>
 
-        <p className="text-[10px] text-outline/50 hover:text-outline/80 transition-colors pt-2">
-          Ketuk layar untuk langsung lanjut &rarr;
+        <p className="text-[10px] text-outline/60 pt-1">
+          Memuat aplikasi... (Ketuk untuk lewati)
         </p>
       </div>
     </div>

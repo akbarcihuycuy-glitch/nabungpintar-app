@@ -50,18 +50,28 @@ function MainApp() {
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState<boolean>(false);
 
   // Opening Splash & Route Morph Transition (Pilar 1)
-  const [hasFinishedOpening, setHasFinishedOpening] = useState<boolean>(false);
+  const [showSplash, setShowSplash] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('np_splash_shown')) {
+      return false;
+    }
+    return true;
+  });
 
-  // Unconditional guarantee: force splash screen to close after 1,500ms max
   useEffect(() => {
-    const hardTimer = setTimeout(() => {
-      setHasFinishedOpening(true);
-    }, 1500);
-    return () => clearTimeout(hardTimer);
-  }, []);
+    if (!showSplash) return;
+    try {
+      sessionStorage.setItem('np_splash_shown', '1');
+    } catch {}
+
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 450); // Snappy 450ms intro
+
+    return () => clearTimeout(timer);
+  }, [showSplash]);
 
   const handleFinishOpening = useCallback(() => {
-    setHasFinishedOpening(true);
+    setShowSplash(false);
   }, []);
 
   // Auth & Sync States (S13, S14)
@@ -205,23 +215,19 @@ function MainApp() {
     setIsCreateGoalOpen(true);
   };
 
-  // 1. Opening Splash Screen & Route Morph (Pilar 1)
-  if (!hasFinishedOpening) {
-    return (
-      <OpeningSplashScreen
-        user={user}
-        isSessionChecking={isAuthLoading}
-        onFinishOpening={handleFinishOpening}
-      />
-    );
-  }
-
-  // 2. Mandatory Login Route Protection (PRD Section 4.8):
-  // Any user without an active Supabase session is directed to AuthScreen
+  // 1. Mandatory Login Route Protection (PRD Section 4.8):
+  // Any user without an active Supabase session is directed to AuthScreen immediately.
+  // Splash screen is rendered as a non-blocking overlay on top that fades out in 450ms.
   if (!user) {
     return (
       <>
         <AuthScreen onSuccess={() => setIsAuthOpen(false)} />
+        {showSplash && (
+          <OpeningSplashScreen
+            user={null}
+            onFinishOpening={handleFinishOpening}
+          />
+        )}
         {isResetPasswordOpen && (
           <ResetPasswordModal
             isOpen={isResetPasswordOpen}
@@ -240,13 +246,21 @@ function MainApp() {
     );
   }
 
-  // 3. Security PIN Lock Screen Protection (Pilar 7)
+  // 2. Security PIN Lock Screen Protection (Pilar 7)
   if (isPinConfigured() && !isPinUnlocked) {
     return (
-      <PinLockScreen
-        onUnlocked={() => setIsPinUnlocked(true)}
-        onForgotPin={() => setIsLogoutOpen(true)}
-      />
+      <>
+        <PinLockScreen
+          onUnlocked={() => setIsPinUnlocked(true)}
+          onForgotPin={() => setIsLogoutOpen(true)}
+        />
+        {showSplash && (
+          <OpeningSplashScreen
+            user={user}
+            onFinishOpening={handleFinishOpening}
+          />
+        )}
+      </>
     );
   }
 
@@ -510,6 +524,13 @@ function MainApp() {
             onSuccess={() => setIsAuthOpen(false)}
           />
         </div>
+      )}
+      {/* Opening Splash Screen Overlay */}
+      {showSplash && (
+        <OpeningSplashScreen
+          user={user}
+          onFinishOpening={handleFinishOpening}
+        />
       )}
     </>
   );
