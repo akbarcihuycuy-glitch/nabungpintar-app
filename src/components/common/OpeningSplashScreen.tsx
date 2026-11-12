@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 
 interface OpeningSplashScreenProps {
@@ -13,6 +13,8 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
   onFinishOpening,
 }) => {
   const [stage, setStage] = useState<'intro' | 'greeting' | 'exit'>('intro');
+  const onFinishRef = useRef(onFinishOpening);
+  onFinishRef.current = onFinishOpening;
 
   const fullName =
     user?.user_metadata?.full_name ||
@@ -20,31 +22,39 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
     (typeof window !== 'undefined' ? localStorage.getItem('np_user_name') : null) ||
     '';
 
+  const handleDismiss = () => {
+    setStage('exit');
+    onFinishRef.current();
+  };
+
   useEffect(() => {
-    // 1. First stage: spring scale-up & glow (800ms)
+    // 1. First stage: spring scale-up & glow (700ms)
     const introTimer = setTimeout(() => {
       setStage('greeting');
-    }, 850);
+    }, 700);
 
-    // 2. Second stage: greeting / ready (1500ms total)
-    const completeTimer = setTimeout(() => {
+    // 2. HARD GUARANTEE: Exactly 1.5s (1500ms) maximum runtime
+    // Regardless of network, session check, or re-renders, splash MUST dismiss!
+    const hardLimitTimer = setTimeout(() => {
       setStage('exit');
       setTimeout(() => {
-        onFinishOpening();
-      }, 400); // 400ms zoom/fade exit
-    }, 1600);
+        onFinishRef.current();
+      }, 250);
+    }, 1500);
 
     return () => {
       clearTimeout(introTimer);
-      clearTimeout(completeTimer);
+      clearTimeout(hardLimitTimer);
     };
-  }, [onFinishOpening]);
+  }, []);
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-[#0B1120] text-[#E8EEF9] flex flex-col items-center justify-center p-6 selection:bg-primary selection:text-black font-sans transition-all duration-500 ${
+      onClick={handleDismiss}
+      className={`fixed inset-0 z-50 bg-[#0B1120] text-[#E8EEF9] flex flex-col items-center justify-center p-6 selection:bg-primary selection:text-black font-sans transition-all duration-300 cursor-pointer ${
         stage === 'exit' ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
+      title="Ketuk untuk langsung membuka aplikasi"
     >
       {/* Ambient Emerald & Cyan Radial Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/20 blur-3xl pointer-events-none animate-pulse" />
@@ -96,6 +106,10 @@ export const OpeningSplashScreen: React.FC<OpeningSplashScreenProps> = ({
         <div className="w-48 h-1 rounded-full bg-surface-container-highest overflow-hidden relative mt-2">
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-sky-400 to-emerald-400 rounded-full animate-shimmer" />
         </div>
+
+        <p className="text-[10px] text-outline/50 hover:text-outline/80 transition-colors pt-2">
+          Ketuk layar untuk langsung lanjut &rarr;
+        </p>
       </div>
     </div>
   );

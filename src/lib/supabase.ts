@@ -1,14 +1,19 @@
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 
-// Resolve URL and Anon Key from localStorage override or .env
+// Production Fallbacks so Render Static Site never hangs even if env vars are unset at build time
+const DEFAULT_SUPABASE_URL = 'https://iiwgmjndtdvnlnfpetjp.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpd2dtam5kdGR2bmxuZnBldGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzODg1OTMsImV4cCI6MjEwOTk2NDU5M30.xQo2SUz3M7B2023YEvTsmk6s904cL60XgcgEKoo_siM';
+export const DEFAULT_GOOGLE_CLIENT_ID = '1045859094349-ddr6et4oqt30m4iu00bhduesdomamt4b.apps.googleusercontent.com';
+
+// Resolve URL and Anon Key from localStorage override, .env, or production fallback
 const envUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 const customUrl = (typeof window !== 'undefined' ? localStorage.getItem('np_custom_supabase_url') || '' : '').trim();
 const customKey = (typeof window !== 'undefined' ? localStorage.getItem('np_custom_supabase_anon_key') || '' : '').trim();
 
-const effectiveUrl = customUrl || envUrl;
-const effectiveKey = customKey || envKey;
+const effectiveUrl = customUrl || envUrl || DEFAULT_SUPABASE_URL;
+const effectiveKey = customKey || envKey || DEFAULT_SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null = null;
 let configured = false;
@@ -88,9 +93,16 @@ export async function ensureAuth(): Promise<string | null> {
 
   authPromise = (async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session?.user) {
-        cachedUserId = sessionData.session.user.id;
+      // Maximum 1.2s timeout so ensureAuth never hangs in Render / slow networks
+      const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+        setTimeout(() => resolve({ data: { session: null } }), 1200)
+      );
+
+      const sessionPromise = supabase.auth.getSession();
+      const res = await Promise.race([sessionPromise, timeoutPromise]);
+
+      if (res?.data?.session?.user) {
+        cachedUserId = res.data.session.user.id;
         return cachedUserId;
       }
     } catch (err) {
@@ -167,7 +179,8 @@ export async function signInWithGoogle() {
   return result.data;
 }
 
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+export const GOOGLE_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID).trim();
 
 /**
  * Sign in using Google Identity Services (GIS) ID Token (JWT).

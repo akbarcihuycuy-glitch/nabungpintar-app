@@ -55,9 +55,13 @@ export function useAuth() {
         isInitializing = false;
         notifySubscribers();
       } else {
-        supabase.auth.getSession().then(({ data }) => {
-          sharedSession = data.session;
-          sharedUser = data.session?.user || null;
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), 1200)
+        );
+        Promise.race([supabase.auth.getSession(), timeoutPromise]).then((res) => {
+          const session = res?.data?.session || null;
+          sharedSession = session;
+          sharedUser = session?.user || null;
           isInitialized = true;
           isInitializing = false;
           notifySubscribers();

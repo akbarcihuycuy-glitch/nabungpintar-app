@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppShell, TabKey } from './components/layout/AppShell';
 import { DashboardScreen } from './components/dashboard/DashboardScreen';
@@ -51,6 +51,18 @@ function MainApp() {
 
   // Opening Splash & Route Morph Transition (Pilar 1)
   const [hasFinishedOpening, setHasFinishedOpening] = useState<boolean>(false);
+
+  // Unconditional guarantee: force splash screen to close after 1,500ms max
+  useEffect(() => {
+    const hardTimer = setTimeout(() => {
+      setHasFinishedOpening(true);
+    }, 1500);
+    return () => clearTimeout(hardTimer);
+  }, []);
+
+  const handleFinishOpening = useCallback(() => {
+    setHasFinishedOpening(true);
+  }, []);
 
   // Auth & Sync States (S13, S14)
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -199,7 +211,7 @@ function MainApp() {
       <OpeningSplashScreen
         user={user}
         isSessionChecking={isAuthLoading}
-        onFinishOpening={() => setHasFinishedOpening(true)}
+        onFinishOpening={handleFinishOpening}
       />
     );
   }
