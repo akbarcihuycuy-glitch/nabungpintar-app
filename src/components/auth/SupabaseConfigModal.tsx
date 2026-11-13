@@ -9,9 +9,7 @@ interface SupabaseConfigModalProps {
 export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({ isOpen, onClose }) => {
   const currentCreds = getSupabaseCredentials();
   const [url, setUrl] = useState<string>(currentCreds.url || '');
-  const [anonKey, setAnonKey] = useState<string>(
-    typeof window !== 'undefined' ? localStorage.getItem('np_custom_supabase_anon_key') || '' : ''
-  );
+  const [anonKey, setAnonKey] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;

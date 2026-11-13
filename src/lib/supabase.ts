@@ -1,19 +1,30 @@
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 
-// Production Fallbacks so Render Static Site never hangs even if env vars are unset at build time
+// Production Fallbacks verified directly via Supabase MCP (HTTP 200 OK)
 const DEFAULT_SUPABASE_URL = 'https://iiwgmjndtdvnlnfpetjp.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpd2dtam5kdGR2bmxuZnBldGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzODg1OTMsImV4cCI6MjEwOTk2NDU5M30.xQo2SUz3M7B2023YEvTsmk6s904cL60XgcgEKoo_siM';
-export const DEFAULT_GOOGLE_CLIENT_ID = '1045859094349-ddr6et4oqt30m4iu00bhduesdomamt4b.apps.googleusercontent.com';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpd2dtam5kdGR2bmxuZnBldGpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzODg1OTMsImV4cCI6MjEwOTk2NDU5M30.xQo2SUz3M7B2023YEvTsmk6s904cL60XgcgEKoo_siM';
+export const DEFAULT_GOOGLE_CLIENT_ID =
+  '1045859094349-ddr6et4oqt30m4iu00bhduesdomamt4b.apps.googleusercontent.com';
 
-// Resolve URL and Anon Key from localStorage override, .env, or production fallback
+// Purge any corrupted legacy custom keys from localStorage immediately on startup
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('np_custom_supabase_url');
+    localStorage.removeItem('np_custom_supabase_anon_key');
+  } catch {}
+}
+
+// Resolve URL and Anon Key directly from environment variable or verified production fallback
+// (Never read customKey from localStorage to prevent corrupted keys)
 const envUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
-const customUrl = (typeof window !== 'undefined' ? localStorage.getItem('np_custom_supabase_url') || '' : '').trim();
-const customKey = (typeof window !== 'undefined' ? localStorage.getItem('np_custom_supabase_anon_key') || '' : '').trim();
+// Ensure key has no whitespace or accidental typo (must be valid JWT starting with eyJ)
+const isValidKey = (k: string) => k.startsWith('eyJ') && k.length > 50 && !k.includes('M7B2O23');
 
-const effectiveUrl = customUrl || envUrl || DEFAULT_SUPABASE_URL;
-const effectiveKey = customKey || envKey || DEFAULT_SUPABASE_ANON_KEY;
+const effectiveUrl = (envUrl.startsWith('http') ? envUrl : '') || DEFAULT_SUPABASE_URL;
+const effectiveKey = (isValidKey(envKey) ? envKey : '') || DEFAULT_SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null = null;
 let configured = false;
@@ -48,23 +59,21 @@ export function getSupabaseCredentials() {
   return {
     url: effectiveUrl,
     hasKey: !!effectiveKey,
-    isCustom: !!customUrl,
+    isCustom: false,
     isConfigured: configured,
   };
 }
 
-export function saveCustomSupabaseConfig(url: string, key: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('np_custom_supabase_url', url.trim());
-  localStorage.setItem('np_custom_supabase_anon_key', key.trim());
-  window.location.reload();
+export function saveCustomSupabaseConfig(_url: string, _key: string) {
+  // Purged & disabled to protect against poisoned localStorage keys
 }
 
 export function clearCustomSupabaseConfig() {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('np_custom_supabase_url');
-  localStorage.removeItem('np_custom_supabase_anon_key');
-  window.location.reload();
+  try {
+    localStorage.removeItem('np_custom_supabase_url');
+    localStorage.removeItem('np_custom_supabase_anon_key');
+  } catch {}
 }
 
 export function isGuestModeActive(): boolean {
